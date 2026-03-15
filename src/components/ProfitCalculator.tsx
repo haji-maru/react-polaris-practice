@@ -1,14 +1,20 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 // Shopifyのデザインパーツ（Polaris）を読み込む
 import { Card, TextField, ButtonGroup, Button, Text, FormLayout } from '@shopify/polaris';
 
-const ProfitCalculator = () => {
-  // ① 状態（state）の準備：入力される数字を覚えておく箱
+const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
+  // 状態（state）の準備：入力される数字を覚えておく箱
   const [cost, setCost] = useState('1000'); // 原価（初期値1000円）
   const [margin, setMargin] = useState('30'); // 利益率（初期値30%）
   const [sellingPrice, setSellingPrice] = useState(0); // 計算結果（最初は0）
 
-  // ② ボタンが押された時の計算処理
+  useEffect(() => {
+    if (selectedPrice) {
+      setCost(selectedPrice);
+    }
+  }, [selectedPrice]);
+
+  // ボタンが押された時の計算処理
   const handleCalculate = () => {
     const costNumber = Number(cost);
     const marginNumber = Number(margin);
@@ -27,7 +33,7 @@ const ProfitCalculator = () => {
     setSellingPrice(0);
   };
 
-  // ③ 画面の表示（Polarisのブロックを組み立てる）
+  // 画面の表示（Polarisのブロックを組み立てる）
   return (
     <Card>
       <FormLayout>
