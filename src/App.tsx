@@ -8,6 +8,8 @@ import jaTranslations from '@shopify/polaris/locales/ja.json';
 import ProfitCalculator from './components/ProfitCalculator';
 // UTMツール
 import UtmGenerator from './components/UtmGenerator';
+// 商品リスト
+import ProductList from './components/ProductList';
 
 const App = () => {
   // タブの状態を管理するためのstate
@@ -26,6 +28,11 @@ const App = () => {
       content: 'UTMジェネレーター',
       panelID: 'utm-panel',
     },
+    {
+      id: 'product-list',
+      content: '商品リスト',
+      panelID: 'product-panel',
+    },
   ];
   return (
     <>
@@ -39,6 +46,9 @@ const App = () => {
 
                 {/* UTM生成機 */}
                 {selectedTab === 1 && <UtmGenerator />}
+
+                {/* 商品リスト */}
+                {selectedTab === 2 && <ProductList />}
               </Layout.Section>
             </Layout>
           </Tabs>
