@@ -16,6 +16,13 @@ const App = () => {
   const [selectedTab, setSelectedTab] = useState(0);
   // タブがクリックされたときの処理
   const handleTabChange = useCallback((selectedTab: number) => setSelectedTab(selectedTab), []);
+  // リストから選ばれた商品の「価格」を覚えておくstate
+  const [selectedPrice, setSelectedPrice] = useState('');
+  // 商品リストから価格が選ばれたときの処理
+  const handleProductSelect = useCallback((price: string) => {
+    setSelectedPrice(price); // 価格を覚える
+    setSelectedTab(0); // 利益計算機のタブに切り替える
+  }, []);
   // タブの内容を定義
   const tabs = [
     {
@@ -42,13 +49,13 @@ const App = () => {
             <Layout>
               <Layout.Section>
                 {/* 利益計算機 */}
-                {selectedTab === 0 && <ProfitCalculator />}
+                {selectedTab === 0 && <ProfitCalculator selectedPrice={selectedPrice} />}
 
                 {/* UTM生成機 */}
                 {selectedTab === 1 && <UtmGenerator />}
 
                 {/* 商品リスト */}
-                {selectedTab === 2 && <ProductList />}
+                {selectedTab === 2 && <ProductList onSelectProduct={handleProductSelect} />}
               </Layout.Section>
             </Layout>
           </Tabs>
