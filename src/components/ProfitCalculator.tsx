@@ -31,6 +31,10 @@ const ProfitCalculator = () => {
   return (
     <Card>
       <FormLayout>
+        <Text as="h2" variant="headingMd">
+          利益率＆販売価格シミュレーター 💰
+        </Text>
+
         <TextField
           label="仕入れ値（原価）円"
           value={cost}
@@ -38,7 +42,6 @@ const ProfitCalculator = () => {
           autoComplete="off"
           type="number"
         />
-
         <TextField
           label="欲しい利益率（％）"
           value={margin}
@@ -46,7 +49,6 @@ const ProfitCalculator = () => {
           autoComplete="off"
           type="number"
         />
-
         <ButtonGroup>
           <Button variant="primary" onClick={handleCalculate}>
             販売価格を計算する
@@ -56,7 +58,6 @@ const ProfitCalculator = () => {
             販売価格をリセットする
           </Button>
         </ButtonGroup>
-
         {/* 計算結果が0より大きい時だけ、結果の文字を表示する */}
         {sellingPrice > 0 && (
           <Text as="h2" variant="headingLg" tone="success">
