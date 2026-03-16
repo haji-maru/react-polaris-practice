@@ -1,7 +1,7 @@
 // ReactからuseStateとuseCallbackを読み込む
 import { useState, useCallback } from 'react';
 // Shopifyのデザインパーツ（Polaris）を読み込む
-import { Layout, Tabs } from '@shopify/polaris';
+import { Layout, Tabs, Banner, BlockStack } from '@shopify/polaris';
 // 計算部分
 import ProfitCalculator from './ProfitCalculator';
 // UTMツール
@@ -16,10 +16,18 @@ const ToolManager = () => {
   const handleTabChange = useCallback((index: number) => setSelectedTab(index), []);
   // リストから選ばれた商品の「価格」を覚えておくstate
   const [selectedPrice, setSelectedPrice] = useState('');
+  // バナー表示のstate
+  const [showBanner, setShowBanner] = useState(false);
   // 商品リストから価格が選ばれたときの処理
   const handleProductSelect = useCallback((price: string) => {
     setSelectedPrice(price); // 価格を覚える
     setSelectedTab(0); // 利益計算機のタブに切り替える
+    setShowBanner(true); // バナーを表示する
+
+    // 3秒後にバナーを消す
+    setTimeout(() => {
+      setShowBanner(false);
+    }, 3000);
   }, []);
   // タブの内容を定義
   const tabs = [
@@ -44,14 +52,21 @@ const ToolManager = () => {
     <Tabs tabs={tabs} selected={selectedTab} onSelect={handleTabChange}>
       <Layout>
         <Layout.Section>
-          {/* 利益計算機 */}
-          {selectedTab === 0 && <ProfitCalculator selectedPrice={selectedPrice} />}
+          <BlockStack gap="400">
+            {/* 商品選択のバナー */}
+            {showBanner && (
+              <Banner title="商品が選択されました！" tone="success" onDismiss={() => setShowBanner(false)}>
+                <p>商品リストから価格をセットしました。</p>
+              </Banner>
+            )}
 
-          {/* UTM生成機 */}
-          {selectedTab === 1 && <UtmGenerator />}
-
-          {/* 商品リスト */}
-          {selectedTab === 2 && <ProductList onSelectProduct={handleProductSelect} />}
+            {/* 利益計算機 */}
+            {selectedTab === 0 && <ProfitCalculator selectedPrice={selectedPrice} />}
+            {/* UTM生成機 */}
+            {selectedTab === 1 && <UtmGenerator />}
+            {/* 商品リスト */}
+            {selectedTab === 2 && <ProductList onSelectProduct={handleProductSelect} />}
+          </BlockStack>
         </Layout.Section>
       </Layout>
     </Tabs>
