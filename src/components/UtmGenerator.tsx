@@ -1,20 +1,26 @@
-import { useState } from 'react';
-import { Card, FormLayout, TextField, Select, Text, Button } from '@shopify/polaris';
+import { useEffect, useState } from 'react';
+import { Card, FormLayout, TextField, Select, Text, Button, Box, BlockStack, InlineStack } from '@shopify/polaris';
+
+const SOURCE_OPTIONS = [
+  { label: 'Instagram', value: 'instagram' },
+  { label: 'X (Twitter)', value: 'twitter' },
+  { label: 'LINE配信', value: 'line' },
+  { label: 'メルマガ', value: 'newsletter' },
+];
 
 const UtmGenerator = () => {
-  const [baseUrl, setBaseUrl] = useState('');
-  const [source, setSource] = useState('instagram');
-  const [campaign, setCampaign] = useState('');
+  const [baseUrl, setBaseUrl] = useState(() => localStorage.getItem('baseUrl') ?? ''); // ベースURL（初期値は空文字）
+  const [source, setSource] = useState(() => localStorage.getItem('source') ?? 'instagram');
+  const [campaign, setCampaign] = useState(() => localStorage.getItem('campaign') ?? '');
 
   // コピー完了の文字切替
   const [isCopied, setIsCopied] = useState(false);
 
-  const sourceOptions = [
-    { label: 'Instagram', value: 'instagram' },
-    { label: 'X (Twitter)', value: 'twitter' },
-    { label: 'LINE配信', value: 'line' },
-    { label: 'メルマガ', value: 'newsletter' },
-  ];
+  useEffect(() => {
+    localStorage.setItem('baseUrl', baseUrl);
+    localStorage.setItem('source', source);
+    localStorage.setItem('campaign', campaign);
+  }, [baseUrl, source, campaign]);
 
   // baseUrlが入力されている時だけ、後ろにパラメータをくっつける
   const generatedUrl = baseUrl ? `${baseUrl}?utm_source=${source}&utm_medium=social&utm_campaign=${campaign}` : '';
@@ -48,7 +54,7 @@ const UtmGenerator = () => {
           placeholder="https://your-store.com/products/xxx"
         />
 
-        <Select label="参照元 (utm_source)" options={sourceOptions} onChange={setSource} value={source} />
+        <Select label="参照元 (utm_source)" options={SOURCE_OPTIONS} onChange={setSource} value={source} />
 
         <TextField
           label="キャンペーン名 (utm_campaign)"
@@ -60,13 +66,17 @@ const UtmGenerator = () => {
 
         {/* URLが生成された時だけ結果を表示 */}
         {generatedUrl && (
-          <div style={{ marginTop: '16px', padding: '16px', backgroundColor: '#f4f6f8', borderRadius: '8px' }}>
-            <Text as="p" fontWeight="bold">
-              生成されたURL:
-            </Text>
-            <Text as="p">{generatedUrl}</Text>
-            <Button onClick={handleCopy}>{isCopied ? 'コピーしました' : 'URLをコピー'}</Button>
-          </div>
+          <Box paddingBlockStart="400" padding="400" background="bg-surface-secondary" borderRadius="200">
+            <BlockStack gap="200">
+              <Text as="p" fontWeight="bold">
+                生成されたURL:
+              </Text>
+              <Text as="p">{generatedUrl}</Text>
+              <InlineStack gap="200">
+                <Button onClick={handleCopy}>{isCopied ? 'コピーしました' : 'URLをコピー'}</Button>
+              </InlineStack>
+            </BlockStack>
+          </Box>
         )}
       </FormLayout>
     </Card>
