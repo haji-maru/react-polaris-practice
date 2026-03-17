@@ -2,12 +2,19 @@ import { useState, useEffect } from 'react';
 // Shopifyのデザインパーツ（Polaris）を読み込む
 import { Card, TextField, ButtonGroup, Button, Text, FormLayout, BlockStack, Select } from '@shopify/polaris';
 
+// 端数処理の選択肢
+const ROUNDING_OPTIONS = [
+  { label: '切り上げ', value: 'ceil' },
+  { label: '切り捨て', value: 'floor' },
+  { label: '四捨五入', value: 'round' },
+];
+
 const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
   // 状態（state）の準備：入力される数字を覚えておく箱
-  const [cost, setCost] = useState('1000'); // 原価（初期値1000円）
-  const [margin, setMargin] = useState('30'); // 利益率（初期値30%）
-  const [feeRate, setFeeRate] = useState('3.4'); // Shopifyの標準的な決済手数料（初期値3.4%）
-  const [roundingMethod, setRoundingMethod] = useState('ceil'); // 端数処理の方法（初期値は切り上げ）
+  const [cost, setCost] = useState(() => localStorage.getItem('cost') ?? '1000'); // 原価（初期値1000円）
+  const [margin, setMargin] = useState(() => localStorage.getItem('margin') ?? '30'); // 利益率（初期値30%）
+  const [feeRate, setFeeRate] = useState(() => localStorage.getItem('feeRate') ?? '3.4'); // Shopifyの標準的な決済手数料（初期値3.4%）
+  const [roundingMethod, setRoundingMethod] = useState(() => localStorage.getItem('roundingMethod') ?? 'ceil'); // 端数処理の方法（初期値は切り上げ）
   const [sellingPrice, setSellingPrice] = useState(0); // 計算結果（最初は0）
 
   useEffect(() => {
@@ -15,6 +22,13 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
       setCost(selectedPrice);
     }
   }, [selectedPrice]);
+
+  useEffect(() => {
+    localStorage.setItem('cost', cost);
+    localStorage.setItem('margin', margin);
+    localStorage.setItem('feeRate', feeRate);
+    localStorage.setItem('roundingMethod', roundingMethod);
+  }, [cost, margin, feeRate, roundingMethod]);
 
   // ボタンが押された時の計算処理
   const handleCalculate = () => {
@@ -43,12 +57,6 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
     round: `※端数は四捨五入しています。実際の利益率は${margin}%付近になります。`,
   };
 
-  const roundingOptions = [
-    { label: '切り上げ', value: 'ceil' },
-    { label: '切り捨て', value: 'floor' },
-    { label: '四捨五入', value: 'round' },
-  ];
-
   // リセットボタン
   const handleReset = () => {
     setCost('1000');
@@ -56,6 +64,10 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
     setFeeRate('3.4');
     setRoundingMethod('ceil');
     setSellingPrice(0);
+    localStorage.removeItem('cost');
+    localStorage.removeItem('margin');
+    localStorage.removeItem('feeRate');
+    localStorage.removeItem('roundingMethod');
   };
 
   // 画面の表示（Polarisのブロックを組み立てる）
@@ -90,7 +102,7 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
         />
         <Select
           label="端数処理の方法"
-          options={roundingOptions}
+          options={ROUNDING_OPTIONS}
           value={roundingMethod}
           onChange={(value) => setRoundingMethod(value)}
         />
