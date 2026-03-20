@@ -10,6 +10,8 @@ import UtmGenerator from './UtmGenerator';
 import ProductList from './ProductList';
 // 一括割引計算機
 import BulkDiscountCalculator from './BulkDiscountCalculator';
+// 粗利益計算ツール
+import GrossProfitCalculator from './GrossProfitCalculator';
 
 const ToolManager = () => {
   // タブの状態を管理するためのstate
@@ -53,6 +55,11 @@ const ToolManager = () => {
       content: '一括割引計算ツール',
       panelID: 'bulk-discount-panel',
     },
+    {
+      id: 'gross-profit-calculator',
+      content: '粗利益計算ツール',
+      panelID: 'gross-profit-panel',
+    },
   ];
 
   return (
@@ -75,6 +82,8 @@ const ToolManager = () => {
             {selectedTab === 2 && <ProductList onSelectProduct={handleProductSelect} />}
             {/* 一括割引計算機 */}
             {selectedTab === 3 && <BulkDiscountCalculator />}
+            {/* 粗利益計算ツール */}
+            {selectedTab === 4 && <GrossProfitCalculator />}
           </BlockStack>
         </Layout.Section>
       </Layout>
