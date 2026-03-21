@@ -2,6 +2,9 @@ import { useState, useEffect } from 'react';
 // Shopifyのデザインパーツ（Polaris）を読み込む
 import { Card, TextField, ButtonGroup, Button, Text, FormLayout, BlockStack, Select } from '@shopify/polaris';
 
+// RailsのAPIのURL
+const API_URL = 'http://localhost:3000/api/v1/calculator_settings';
+
 // 端数処理の選択肢
 const ROUNDING_OPTIONS = [
   { label: '切り上げ', value: 'ceil' },
@@ -11,11 +14,12 @@ const ROUNDING_OPTIONS = [
 
 const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
   // 状態（state）の準備：入力される数字を覚えておく箱
-  const [cost, setCost] = useState(() => localStorage.getItem('cost') ?? '1000'); // 原価（初期値1000円）
-  const [margin, setMargin] = useState(() => localStorage.getItem('margin') ?? '30'); // 利益率（初期値30%）
-  const [feeRate, setFeeRate] = useState(() => localStorage.getItem('feeRate') ?? '3.4'); // Shopifyの標準的な決済手数料（初期値3.4%）
-  const [roundingMethod, setRoundingMethod] = useState(() => localStorage.getItem('roundingMethod') ?? 'ceil'); // 端数処理の方法（初期値は切り上げ）
+  const [cost, setCost] = useState('1000'); // 原価（初期値1000円）
+  const [margin, setMargin] = useState('30'); // 利益率（初期値30%）
+  const [feeRate, setFeeRate] = useState('3.4'); // Shopifyの標準的な決済手数料（初期値3.4%）
+  const [roundingMethod, setRoundingMethod] = useState('ceil'); // 端数処理の方法（初期値は切り上げ）
   const [sellingPrice, setSellingPrice] = useState(0); // 計算結果（最初は0）
+  const [settingsId, setSettingsId] = useState<number | null>(null); // APIから取得した設定値のIDを管理
 
   useEffect(() => {
     if (selectedPrice) {
@@ -23,15 +27,30 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
     }
   }, [selectedPrice]);
 
+  // アプリ起動時にAPIから設定値を取得
   useEffect(() => {
-    localStorage.setItem('cost', cost);
-    localStorage.setItem('margin', margin);
-    localStorage.setItem('feeRate', feeRate);
-    localStorage.setItem('roundingMethod', roundingMethod);
-  }, [cost, margin, feeRate, roundingMethod]);
+    const fetchSettings = async () => {
+      try {
+        const response = await fetch(API_URL);
+        const data = await response.json();
+
+        // データが存在する場合はStateにセット
+        if (data.id) {
+          setCost(data.cost);
+          setMargin(data.margin);
+          setFeeRate(data.fee_rate);
+          setRoundingMethod(data.rounding_method);
+          setSettingsId(data.id); // 設定値のIDを保存
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    };
+    fetchSettings();
+  }, []);
 
   // ボタンが押された時の計算処理
-  const handleCalculate = () => {
+  const handleCalculate = async () => {
     const costNumber = isNaN(Number(cost)) ? 0 : Number(cost); // 原価を数字に変換（もし数字でなければ0）
     const marginNumber = isNaN(Number(margin)) ? 0 : Number(margin); // 利益率を数字に変換（もし数字でなければ0）
     const feeRateNumber = isNaN(Number(feeRate)) ? 0 : Number(feeRate); // 手数料率を数字に変換（もし数字でなければ0）
@@ -48,6 +67,42 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
 
     // リモコンを使って結果を画面に反映！（小数点以下は切り捨て）
     setSellingPrice(roundingMap[roundingMethod](calculatedPrice));
+
+    // APIに設定値を保存する
+    const body = JSON.stringify({
+      calculator_setting: {
+        cost,
+        margin,
+        fee_rate: feeRate,
+        rounding_method: roundingMethod,
+      },
+    });
+
+    try {
+      if (settingsId) {
+        // IDがある場合は更新（PATCH）
+        await fetch(`${API_URL}/${settingsId}`, {
+          method: 'PATCH',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+      } else {
+        // IDがない場合は新規作成（POST）
+        const response = await fetch(API_URL, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body,
+        });
+        const data = await response.json();
+        setSettingsId(data.id); // 新規作成した設定値のIDを保存
+      }
+    } catch (error) {
+      console.error(error);
+    }
   };
 
   // 補足テキスト（切り上げ、切り捨て、四捨五入）
@@ -64,10 +119,6 @@ const ProfitCalculator = ({ selectedPrice }: { selectedPrice: string }) => {
     setFeeRate('3.4');
     setRoundingMethod('ceil');
     setSellingPrice(0);
-    localStorage.removeItem('cost');
-    localStorage.removeItem('margin');
-    localStorage.removeItem('feeRate');
-    localStorage.removeItem('roundingMethod');
   };
 
   // 画面の表示（Polarisのブロックを組み立てる）
