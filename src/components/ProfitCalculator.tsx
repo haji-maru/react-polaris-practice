@@ -3,7 +3,7 @@ import { useState, useEffect } from 'react';
 import { Card, TextField, ButtonGroup, Button, Text, FormLayout, BlockStack, Select } from '@shopify/polaris';
 
 // RailsのAPIのURL
-const API_URL = 'http://localhost:3000/api/v1/calculator_settings';
+const API_URL = 'https://shopify-tools-api.onrender.com/api/v1/calculator_settings';
 
 // 端数処理の選択肢
 const ROUNDING_OPTIONS = [
